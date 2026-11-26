@@ -35,6 +35,7 @@ export const NEW_PRESET = Object.freeze({
 
 export const BUILTINS = Object.freeze([
   Object.freeze({ id: 'builtin-4020', builtin: true, ...NEW_PRESET, name: '40/20 · 7종목 × 3세트' }),
+  Object.freeze({ id: 'builtin-hs-4020-3x2', builtin: true, ...NEW_PRESET, laps: 3, sets: 2, name: '고등부 40/20 · 7종목 × 3바퀴 × 2세트' }),
   Object.freeze({ id: 'builtin-winter-2', builtin: true, ...BUILTIN_PRESETS[1], name: '동계 30/15 · 7종목 × 2바퀴 × 2세트(중등)' }),
   Object.freeze({ id: 'builtin-winter-3', builtin: true, ...BUILTIN_PRESETS[1], sets: 3, name: '동계 30/15 · 7종목 × 2바퀴 × 3세트(고등)' }),
 ]);
