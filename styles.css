@@ -92,3 +92,8 @@ form label { display: block; margin-block: .6rem; font-weight: 700; }
 .preset-list li { border-top: 1px solid #ffffff44; padding-block: .5rem; }
 .preset-title { margin: 0; font-weight: 800; }
 #form-message { font-weight: 700; color: var(--prep); }
+
+/* iPad·iPhone Safari: 입력 칸을 누르면 화면이 확대되지 않게 글자 16px 이상, 버튼 연타가 더블탭 확대로 잡히지 않게 */
+input, select, textarea { font-size: max(16px, 1em); }
+.row input.big { font-size: max(16px, 1.6rem); }
+html, button, input, select, textarea, a, label { touch-action: manipulation; }
