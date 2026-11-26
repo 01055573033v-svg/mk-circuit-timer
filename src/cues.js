@@ -19,7 +19,7 @@ export function cueBetween(previous, current) {
   return null;
 }
 
-const NEXT_LABELS = { prep: '준비', work: '운동', rest: '휴식', lapRest: '바퀴 휴식', setRest: '세트 휴식', cooldown: '쿨다운' };
+const NEXT_LABELS = { prep: '준비', work: '운동', rest: '휴식', lapRest: '바퀴 휴식', setRest: '사이클 휴식', cooldown: '쿨 다운' };
 
 /** Preview band text for the segment after `index`: '다음: 운동 00:40', or '다음: 끝' on the last segment. */
 export function nextPreview(segments, index) {

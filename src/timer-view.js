@@ -2,7 +2,7 @@ import { generateSegments, calculateTotalSeconds } from './segments.js';
 import { createEngine } from './engine.js';
 import { cueBetween, nextPreview } from './cues.js';
 import { unlockAudio, playCue, keepScreenOn, wakeLockSupported, screenLockHeld } from './device.js';
-import { EDIT_FIELDS, NEW_PRESET, allPresets, loadSaved, writeSaved, upsert, remove, presetFromForm, newId, loadSelected, saveSelected } from './store.js';
+import { EDIT_FIELDS, formatTime, parseTime, NEW_PRESET, allPresets, loadSaved, writeSaved, upsert, remove, presetFromForm, newId, loadSelected, saveSelected } from './store.js';
 
 const storage = (() => { try { return window.localStorage; } catch { return null; } })();
 const memory = new Map();
@@ -14,13 +14,13 @@ let segments = generateSegments(preset);
 let engine = createEngine(segments, clock);
 let last = engine.snapshot();
 let editingId = null;
-const labels = { prep: '준비', work: '운동', rest: '휴식', lapRest: '바퀴 사이 휴식', setRest: '세트 사이 휴식', cooldown: '쿨다운' };
+const labels = { prep: '준비', work: '운동', rest: '휴식', lapRest: '바퀴 사이 휴식', setRest: '사이클 사이 휴식', cooldown: '쿨 다운' };
 const find = id => document.getElementById(id);
 const format = ms => {
   const seconds = Math.ceil(ms / 1000);
   return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 };
-const summary = p => `운동 ${p.work}초 · 휴식 ${p.rest}초 · ${p.stations}종목${p.laps > 1 ? ` × ${p.laps}바퀴` : ''} × ${p.sets}세트 · 세트 간 ${p.setRest}초 · 준비 ${p.prep}초 · 총 ${format(calculateTotalSeconds(p) * 1000)}`;
+const summary = p => `준비 ${formatTime(p.prep)} · 운동 ${formatTime(p.work)} · 휴식 ${formatTime(p.rest)} · ${p.stations}라운드${p.laps > 1 ? ` × ${p.laps}바퀴` : ''} × ${p.sets}사이클 · 사이클 사이 ${formatTime(p.setRest)} · 쿨 다운 ${formatTime(p.cooldown)} · 총 ${format(calculateTotalSeconds(p) * 1000)}`;
 
 /* ---------- timer ---------- */
 function select(id) {
@@ -122,7 +122,7 @@ function openForm(source, id) {
   const form = find('preset-form');
   form.hidden = false;
   form.elements.name.value = id || source === NEW_PRESET ? source.name : `${source.name} 복사`.slice(0, 80);
-  for (const { key } of EDIT_FIELDS) form.elements[key].value = source[key];
+  for (const { key, kind } of EDIT_FIELDS) form.elements[key].value = kind === 'time' ? formatTime(source[key]) : source[key];
   find('form-title').textContent = id ? '프리셋 수정' : '새 프리셋';
   showMessage('');
   updatePreview();
@@ -139,13 +139,28 @@ function updatePreview() {
 function showMessage(text) { find('form-message').textContent = text; }
 function buildForm() {
   const box = find('form-fields');
-  box.replaceChildren(...EDIT_FIELDS.map(({ key, label, min, max }) => {
-    const wrap = document.createElement('label');
-    wrap.append(label);
+  box.replaceChildren(...EDIT_FIELDS.map(({ key, label, hint, kind, color, min, max }, i) => {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const dot = document.createElement('span'); dot.className = `dot c-${color}`; dot.setAttribute('aria-hidden', 'true');
+    const name = document.createElement('label'); name.className = 'row-label'; name.htmlFor = `f-${key}`;
+    name.textContent = `${'①②③④⑤⑥⑦'[i]} ${label}`;
+    const small = document.createElement('small'); small.textContent = hint ?? (kind === 'time' ? '분:초' : ''); name.append(small);
     const input = document.createElement('input');
-    Object.assign(input, { name: key, type: 'number', inputMode: 'numeric', min, max, step: 1, required: true });
-    wrap.append(input);
-    return wrap;
+    Object.assign(input, { id: `f-${key}`, name: key, type: 'text', inputMode: kind === 'time' ? 'decimal' : 'numeric', autocomplete: 'off', required: true, className: 'big' });
+    const step = kind === 'time' ? 5 : 1;
+    const bump = sign => {
+      const now = kind === 'time' ? parseTime(input.value) : Number(input.value);
+      const base = Number.isInteger(now) ? now : min;
+      const next = Math.min(max, Math.max(min, base + sign * step));
+      input.value = kind === 'time' ? formatTime(next) : String(next);
+      updatePreview();
+    };
+    const minus = document.createElement('button'); minus.type = 'button'; minus.className = 'step'; minus.textContent = '−'; minus.setAttribute('aria-label', `${label} ${kind === 'time' ? '5초' : '1'} 줄이기`); minus.addEventListener('click', () => bump(-1));
+    const plus = document.createElement('button'); plus.type = 'button'; plus.className = 'step'; plus.textContent = '+'; plus.setAttribute('aria-label', `${label} ${kind === 'time' ? '5초' : '1'} 늘리기`); plus.addEventListener('click', () => bump(1));
+    if (kind === 'time') input.addEventListener('blur', () => { const t = parseTime(input.value); if (Number.isInteger(t) && t <= max) input.value = formatTime(t); });
+    row.append(dot, name, minus, input, plus);
+    return row;
   }));
   const form = find('preset-form');
   form.addEventListener('input', updatePreview);

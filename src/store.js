@@ -5,15 +5,28 @@ export const STORAGE_KEY = 'mk-circuit-timer.presets.v1';
 export const SELECTED_KEY = 'mk-circuit-timer.selected.v1';
 export const MAX_SAVED = 20;
 
-/** The six fields the coach edits. Laps stay 1 (each round = one pass of the stations); lap rest equals rest. */
+/** The seven rows of the editor, in the coach's order. Laps stay 1 (each round = one pass of the stations); lap rest equals rest.
+ * Time rows accept seconds ("90") or minutes:seconds ("1:30"). */
 export const EDIT_FIELDS = Object.freeze([
-  Object.freeze({ key: 'prep', label: '준비 시간(초)', min: 0, max: 3600 }),
-  Object.freeze({ key: 'work', label: '운동 시간(초)', min: 1, max: 3600 }),
-  Object.freeze({ key: 'rest', label: '휴식 시간(초)', min: 0, max: 3600 }),
-  Object.freeze({ key: 'stations', label: '라운드(종목) 수', min: 1, max: 99 }),
-  Object.freeze({ key: 'sets', label: '세트 수', min: 1, max: 99 }),
-  Object.freeze({ key: 'setRest', label: '세트 간 휴식(초)', min: 0, max: 3600 }),
+  Object.freeze({ key: 'prep', label: '준비', kind: 'time', color: 'prep', min: 0, max: 3600 }),
+  Object.freeze({ key: 'work', label: '운동', kind: 'time', color: 'work', min: 1, max: 3600 }),
+  Object.freeze({ key: 'rest', label: '휴식', kind: 'time', color: 'rest', min: 0, max: 3600 }),
+  Object.freeze({ key: 'stations', label: '라운드', hint: '종목 수', kind: 'count', color: 'round', min: 1, max: 99 }),
+  Object.freeze({ key: 'sets', label: '사이클', hint: '세트 수', kind: 'count', color: 'cycle', min: 1, max: 99 }),
+  Object.freeze({ key: 'setRest', label: '사이클 사이 휴식', kind: 'time', color: 'setrest', min: 0, max: 3600 }),
+  Object.freeze({ key: 'cooldown', label: '쿨 다운', kind: 'time', color: 'cooldown', min: 0, max: 3600 }),
 ]);
+
+/** "90" → 90, "1:30" or "1.30" → 90 (phone number pads have a dot, not a colon). Returns NaN for anything else. */
+export function parseTime(text) {
+  const value = String(text ?? '').trim();
+  if (/^\d{1,4}$/.test(value)) return Number(value);
+  const match = /^(\d{1,2})[:.]([0-5]\d)$/.exec(value);
+  return match ? Number(match[1]) * 60 + Number(match[2]) : NaN;
+}
+export function formatTime(seconds) {
+  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+}
 
 export const NEW_PRESET = Object.freeze({
   name: '40/20 서킷', stations: 7, laps: 1, sets: 3,
@@ -29,12 +42,13 @@ export const BUILTINS = Object.freeze([
 /** Build a preset from form values (strings or numbers). Throws with a Korean message when invalid. */
 export function presetFromForm(values, id) {
   const name = String(values.name ?? '').trim();
-  const preset = { name, laps: 1, cooldown: 0 };
-  for (const { key, label, min, max } of EDIT_FIELDS) {
+  const preset = { name, laps: 1 };
+  for (const { key, label, hint, kind, min, max } of EDIT_FIELDS) {
     const text = String(values[key] ?? '').trim();
-    const number = Number(text);
-    if (text === '' || !Number.isInteger(number) || number < min || number > max) {
-      throw new RangeError(`${label}: ${min}~${max} 사이 정수로 적어 주세요.`);
+    const number = kind === 'time' ? parseTime(text) : (/^\d{1,3}$/.test(text) ? Number(text) : NaN);
+    if (!Number.isInteger(number) || number < min || number > max) {
+      const range = kind === 'time' ? `${formatTime(min)}~${formatTime(max)}(초 또는 분:초)` : `${min}~${max}`;
+      throw new RangeError(`${label}${hint ? `(${hint})` : ''}: ${range} 사이로 적어 주세요.`);
     }
     preset[key] = number;
   }
