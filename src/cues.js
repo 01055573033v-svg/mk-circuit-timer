@@ -18,9 +18,3 @@ export function cueBetween(previous, current) {
   if (now < before && now >= 1 && now <= COUNT_FROM && current.segment.seconds > COUNT_FROM) return 'count';
   return null;
 }
-
-/** Choices offered on the timer screen today: middle school 2 sets, high school 3 sets. */
-export const SET_CHOICES = Object.freeze([
-  Object.freeze({ sets: 2, label: '중등 2세트' }),
-  Object.freeze({ sets: 3, label: '고등 3세트' }),
-]);

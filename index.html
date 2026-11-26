@@ -13,14 +13,15 @@
   <script type="module" src="./src/timer-view.js"></script>
 </head>
 <body>
-  <header><h1>백만킬로 서킷 타이머</h1><p>동계 서킷</p></header>
+  <header><h1>백만킬로 서킷 타이머</h1><p>서킷 · 인터벌</p></header>
   <main>
     <section data-panel="timer" aria-labelledby="timer-title">
       <h2 id="timer-title">타이머</h2>
       <div id="timer-active">
-        <div class="choices" role="group" aria-label="세트 수"><button id="sets-2" type="button" aria-pressed="true">중등 2세트</button><button id="sets-3" type="button" aria-pressed="false">고등 3세트</button></div>
-        <p id="preset-name">동계 서킷 · 7종목 × 2바퀴 × 2세트 · 총 23:05</p>
-        <div class="counters"><span>남은 바퀴 <strong id="laps-left">2</strong></span><span>남은 세트 <strong id="sets-left">2</strong></span><span>종목 <strong id="station">—/7</strong></span></div>
+        <label class="picker">프리셋 <select id="preset-picker" aria-label="프리셋 고르기"></select></label>
+        <p id="preset-name" class="note"></p>
+        <p class="note"><a href="#presets">시간·종목·세트 바꾸기 → 프리셋 탭</a></p>
+        <div class="counters"><span id="laps-box">남은 바퀴 <strong id="laps-left">2</strong></span><span>남은 세트 <strong id="sets-left">2</strong></span><span>종목 <strong id="station">—/7</strong></span></div>
         <div id="phase" class="phase prep"><p id="phase-label">준비</p><div id="segment-time" class="countdown" aria-label="현재 구간 남은 시간">00:05</div></div>
         <p>전체 남은 시간 <strong id="total-time">23:05</strong></p>
         <progress id="timer-progress" max="1" value="0" aria-label="전체 진행률"></progress>
@@ -30,14 +31,24 @@
       <div id="timer-result" role="status" hidden><h3>완료</h3><p>결과 · 총 시간 <strong id="result-time">00:00</strong></p><div class="controls"><button id="again" type="button">다시 시작</button></div></div>
     </section>
     <section data-panel="presets" aria-labelledby="presets-title" hidden>
-      <h2 id="presets-title">프리셋</h2><p>준비 중 · 편집과 로컬 저장은 M3에서 제공됩니다.</p>
-      <ul><li>타바타 20/10 × 8</li><li>동계 서킷 30/15 · 7종목 × 2바퀴 × 2세트</li></ul>
+      <h2 id="presets-title">프리셋</h2>
+      <p class="note">이 기기에만 저장됩니다(서버 없음). 기본 프리셋은 「복사해서 수정」으로 바꿔 저장하세요.</p>
+      <div class="controls"><button id="new-preset" type="button">새 프리셋 만들기</button></div>
+      <form id="preset-form" hidden novalidate>
+        <h3 id="form-title">새 프리셋</h3>
+        <label>이름 <input name="name" type="text" maxlength="80" required></label>
+        <div id="form-fields" class="fields"></div>
+        <p id="form-preview" class="note" aria-live="polite"></p>
+        <p id="form-message" role="status"></p>
+        <div class="controls"><button type="submit">저장</button><button id="form-close" type="button">닫기</button></div>
+      </form>
+      <ul id="preset-list" class="preset-list"></ul>
     </section>
     <section data-panel="stopwatch" aria-labelledby="stopwatch-title" hidden>
       <h2 id="stopwatch-title">스톱워치</h2><p>준비 중</p>
     </section>
     <section data-panel="settings" aria-labelledby="settings-title" hidden>
-      <h2 id="settings-title">설정</h2><p>준비 중</p><p>서버·로그인·DB 없이 기기 로컬 저장만 사용할 예정입니다.</p>
+      <h2 id="settings-title">설정</h2><p>준비·운동·휴식 시간, 종목 수, 세트 수, 세트 간 휴식은 <a href="#presets">프리셋 탭</a>에서 바꾸고 저장합니다.</p><p class="note">서버·로그인·DB 없이 이 기기에만 저장합니다. 다른 폰에서는 다시 만들어야 합니다.</p>
     </section>
   </main>
   <nav aria-label="주 메뉴">
