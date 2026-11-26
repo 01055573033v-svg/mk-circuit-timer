@@ -148,7 +148,7 @@ function buildForm() {
     const small = document.createElement('small'); small.textContent = hint ?? (kind === 'time' ? '분:초' : ''); name.append(small);
     const input = document.createElement('input');
     Object.assign(input, { id: `f-${key}`, name: key, type: 'text', inputMode: kind === 'time' ? 'decimal' : 'numeric', autocomplete: 'off', required: true, className: 'big' });
-    const step = kind === 'time' ? 5 : 1;
+    const step = 1;
     const bump = sign => {
       const now = kind === 'time' ? parseTime(input.value) : Number(input.value);
       const base = Number.isInteger(now) ? now : min;
@@ -156,8 +156,8 @@ function buildForm() {
       input.value = kind === 'time' ? formatTime(next) : String(next);
       updatePreview();
     };
-    const minus = document.createElement('button'); minus.type = 'button'; minus.className = 'step'; minus.textContent = '−'; minus.setAttribute('aria-label', `${label} ${kind === 'time' ? '5초' : '1'} 줄이기`); minus.addEventListener('click', () => bump(-1));
-    const plus = document.createElement('button'); plus.type = 'button'; plus.className = 'step'; plus.textContent = '+'; plus.setAttribute('aria-label', `${label} ${kind === 'time' ? '5초' : '1'} 늘리기`); plus.addEventListener('click', () => bump(1));
+    const minus = document.createElement('button'); minus.type = 'button'; minus.className = 'step'; minus.textContent = '−'; minus.setAttribute('aria-label', `${label} ${kind === 'time' ? '1초' : '1'} 줄이기`); minus.addEventListener('click', () => bump(-1));
+    const plus = document.createElement('button'); plus.type = 'button'; plus.className = 'step'; plus.textContent = '+'; plus.setAttribute('aria-label', `${label} ${kind === 'time' ? '1초' : '1'} 늘리기`); plus.addEventListener('click', () => bump(1));
     if (kind === 'time') input.addEventListener('blur', () => { const t = parseTime(input.value); if (Number.isInteger(t) && t <= max) input.value = formatTime(t); });
     row.append(dot, name, minus, input, plus);
     return row;
