@@ -13,20 +13,19 @@
   <script type="module" src="./src/timer-view.js"></script>
 </head>
 <body>
-  <header><h1>백만킬로 서킷 타이머</h1><p>서킷 · 인터벌</p></header>
+  <header><h1>백만킬로 서킷 타이머</h1></header>
   <main>
     <section data-panel="timer" aria-labelledby="timer-title">
-      <h2 id="timer-title">타이머</h2>
+      <h2 id="timer-title" class="sr-only">타이머</h2>
       <div id="timer-active">
-        <label class="picker">프리셋 <select id="preset-picker" aria-label="프리셋 고르기"></select></label>
-        <p id="preset-name" class="note"></p>
-        <p class="note"><a href="#presets">시간·종목·세트 바꾸기 → 프리셋 탭</a></p>
-        <div class="counters"><span id="laps-box">남은 바퀴 <strong id="laps-left">2</strong></span><span>남은 세트 <strong id="sets-left">2</strong></span><span>종목 <strong id="station">—/7</strong></span></div>
+        <div class="topbar"><select id="preset-picker" aria-label="프리셋 고르기"></select><a class="edit-link" href="#presets">편집</a></div>
+        <p id="preset-name" class="note line"></p>
+        <div class="stats"><span>세트 <strong id="sets-left">2</strong></span><span id="laps-box">바퀴 <strong id="laps-left">2</strong></span><span>종목 <strong id="station">—/7</strong></span><span>전체 <strong id="total-time">23:05</strong></span></div>
         <div id="phase" class="phase prep"><p id="phase-label">준비</p><div id="segment-time" class="countdown" aria-label="현재 구간 남은 시간">00:05</div></div>
-        <p>전체 남은 시간 <strong id="total-time">23:05</strong></p>
+        <p id="next-band" class="next-band work">다음: 운동 00:40</p>
         <progress id="timer-progress" max="1" value="0" aria-label="전체 진행률"></progress>
-        <div class="controls"><button id="start" type="button">시작</button><button id="pause" type="button" disabled>일시정지</button><button id="skip" type="button" disabled>건너뛰기</button><button id="reset" type="button" disabled>처음으로</button></div>
-        <p id="device-status" class="note"></p>
+        <div class="controls"><button id="start" type="button" class="primary">시작</button><button id="pause" type="button" hidden>일시정지</button><button id="skip" type="button" hidden>건너뛰기</button><button id="reset" type="button" hidden>초기화</button></div>
+        <p id="device-status" class="note line"></p>
       </div>
       <div id="timer-result" role="status" hidden><h3>완료</h3><p>결과 · 총 시간 <strong id="result-time">00:00</strong></p><div class="controls"><button id="again" type="button">다시 시작</button></div></div>
     </section>

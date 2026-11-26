@@ -18,3 +18,13 @@ export function cueBetween(previous, current) {
   if (now < before && now >= 1 && now <= COUNT_FROM && current.segment.seconds > COUNT_FROM) return 'count';
   return null;
 }
+
+const NEXT_LABELS = { prep: '준비', work: '운동', rest: '휴식', lapRest: '바퀴 휴식', setRest: '세트 휴식', cooldown: '쿨다운' };
+
+/** Preview band text for the segment after `index`: '다음: 운동 00:40', or '다음: 끝' on the last segment. */
+export function nextPreview(segments, index) {
+  const next = segments[index + 1];
+  if (!next) return { kind: 'end', text: '다음: 끝' };
+  const mm = String(Math.floor(next.seconds / 60)).padStart(2, '0'), ss = String(next.seconds % 60).padStart(2, '0');
+  return { kind: next.kind, text: `다음: ${NEXT_LABELS[next.kind]} ${mm}:${ss}` };
+}

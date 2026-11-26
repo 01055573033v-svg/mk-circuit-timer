@@ -1,6 +1,6 @@
 import { generateSegments, calculateTotalSeconds } from './segments.js';
 import { createEngine } from './engine.js';
-import { cueBetween } from './cues.js';
+import { cueBetween, nextPreview } from './cues.js';
 import { unlockAudio, playCue, keepScreenOn, wakeLockSupported, screenLockHeld } from './device.js';
 import { EDIT_FIELDS, NEW_PRESET, allPresets, loadSaved, writeSaved, upsert, remove, presetFromForm, newId, loadSelected, saveSelected } from './store.js';
 
@@ -10,7 +10,8 @@ const store = storage ?? { getItem: key => memory.get(key) ?? null, setItem: (ke
 let saved = loadSaved(store);
 let preset = loadSelected(store, allPresets(saved));
 const clock = () => Date.now();
-let engine = createEngine(generateSegments(preset), clock);
+let segments = generateSegments(preset);
+let engine = createEngine(segments, clock);
 let last = engine.snapshot();
 let editingId = null;
 const labels = { prep: '준비', work: '운동', rest: '휴식', lapRest: '바퀴 사이 휴식', setRest: '세트 사이 휴식', cooldown: '쿨다운' };
@@ -29,7 +30,8 @@ function select(id) {
   reset();
 }
 function reset() {
-  engine = createEngine(generateSegments(preset), clock);
+  segments = generateSegments(preset);
+  engine = createEngine(segments, clock);
   last = engine.snapshot();
   keepScreenOn(false);
   fillPicker();
@@ -70,17 +72,20 @@ function render() {
   find('segment-time').textContent = format(s.segmentRemainingMs);
   find('total-time').textContent = format(s.totalRemainingMs);
   find('timer-progress').value = s.progress;
-  find('start').disabled = s.state !== 'idle';
-  find('pause').disabled = s.state === 'idle';
+  const idle = s.state === 'idle';
+  find('start').hidden = !idle;
+  for (const id of ['pause', 'skip', 'reset']) find(id).hidden = idle;
   find('pause').textContent = s.state === 'paused' ? '재개' : '일시정지';
-  find('skip').disabled = s.state === 'idle';
-  find('reset').disabled = s.state === 'idle';
+  const next = nextPreview(segments, s.index);
+  const band = find('next-band');
+  band.textContent = next.text;
+  band.className = `next-band ${next.kind === 'work' || next.kind === 'prep' || next.kind === 'cooldown' ? next.kind : next.kind === 'end' ? 'end' : 'rest'}`;
 }
 function confirmReset() {
   const button = find('reset');
-  if (button.dataset.armed === '1') { delete button.dataset.armed; button.textContent = '처음으로'; return true; }
-  button.dataset.armed = '1'; button.textContent = '한 번 더 누르면 처음으로';
-  setTimeout(() => { if (button.dataset.armed) { delete button.dataset.armed; button.textContent = '처음으로'; } }, 3000);
+  if (button.dataset.armed === '1') { delete button.dataset.armed; button.textContent = '초기화'; return true; }
+  button.dataset.armed = '1'; button.textContent = '한 번 더';
+  setTimeout(() => { if (button.dataset.armed) { delete button.dataset.armed; button.textContent = '초기화'; } }, 3000);
   return false;
 }
 
